@@ -1,0 +1,70 @@
+on:
+  push:
+    branches: [ main ] 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H:%M:%S')"
+
+    - name: Checkout this repo
+      uses: actions/checkout@v2
+      with:
+        path: main #to reference files from this repo, the filepath to use will be $GITHUB_WORKSPACE/main
+
+    # Modify this step so that your snapshot directory is organized in the way described at
+    # https://batfish.readthedocs.io/en/latest/notebooks/interacting.html#Packaging-snapshot-data
+
+    - name: Create snapshot directory required for Batfish
+      run: |
+        mkdir -p $GITHUB_WORKSPACE/tmp/configs
+        mkdir -p $GITHUB_WORKSPACE/tmp/batfish
+        cp $GITHUB_WORKSPACE/main/changed_bgp/configs/*.cfg $GITHUB_WORKSPACE/tmp/configs/
+        #cp $GITHUB_WORKSPACE/main/changed_bgp/configs/batfish/* $GITHUB_WORKSPACE/tmp/batfish/
+        echo "::set-output name=snapshot_dir::$GITHUB_WORKSPACE/tmp/"
+      id: prepare_snapshot
+
+    - name: Create snapshot artifact
+      uses: actions/upload-artifact@v2
+
+      with:
+        name: batfish_snapshot
+        path: ${{ steps.prepare_snapshot.outputs.snapshot_dir }}
+
+    - name: Upload new snapshot to Batfish Enterprise server
+      #uses: saparikh/bfe-upload@v1.0
+      uses: nagaraj-nex/bfe-upload@v1.0 
+      with:
+        server_name: batfish.nexariacloud.com #DNS name for your Batfish Enterprise server
+        server_ip: 54.197.65.81 #IP address of your Batfish Enterprise server
+        snapshot_folder: ${{ steps.prepare_snapshot.outputs.snapshot_dir }}
+        network_name: test_net #Name of your network
+        snapshot_name: ${{ steps.date.outputs.date }}
+        #snapshot_name: ${{ github.sha }} #This should be a unique value per commit. You can use a combination \ 
+                                    # of the branch name and timestamp if you don’t want to use the commit id
+        ssl_certificate: ${{ secrets.BFE_SSL_CERTIFICATE }} #Github secret containing base64 encoded CA file
+      id: upload_snapshot
+
+    - name: Retrieve outputs from BFE upload action
+      run: |
+        echo ${{ steps.upload_snapshot.outputs.status }}
+        echo ${{ steps.upload_snapshot.outputs.url }}
+
+    - name: set up python on github runner
+      uses: actions/setup-python@v2
+      with: 
+        python-version: 3.8
+    
+    - name: install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r $GITHUB_WORKSPACE/main/requirements.txt
+          
+    - name: execute python script
+      run: |
+        python $GITHUB_WORKSPACE/main/scripts/pytest1.py
+        python $GITHUB_WORKSPACE/main/scripts/pytest2.py
+      
