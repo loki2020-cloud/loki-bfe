@@ -41,7 +41,7 @@ jobs:
         server_name: batfish.nexariacloud.com #DNS name for your Batfish Enterprise server
         server_ip: 54.197.65.81 #IP address of your Batfish Enterprise server
         snapshot_folder: ${{ steps.prepare_snapshot.outputs.snapshot_dir }}
-        network_name: nex_net1 #Name of your network
+        network_name: nex_net2 #Name of your network
         snapshot_name: ${{ steps.date.outputs.date }}
         #snapshot_name: ${{ github.sha }} #This should be a unique value per commit. You can use a combination \ 
                                     # of the branch name and timestamp if you don’t want to use the commit id
