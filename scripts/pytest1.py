@@ -2,6 +2,9 @@ import os, json
 from pybfe.client.session import Session
 from intentionet.bfe.proto import api_gateway_pb2 as api
 import const
+import slack
+
+client = slack.WebClient(token='xoxb-1289970300372-2190340723472-qBPPwI5CpBplhvfglNOKYF1G')
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 os.environ['BFE_SSL_CERT'] = SCRIPT_DIR+'/../cert/test.crt'
@@ -9,9 +12,9 @@ os.environ['BFE_SSL_CERT'] = SCRIPT_DIR+'/../cert/test.crt'
 bf = Session(host=const.BFE_HOST, port=const.BFE_PORT)
 if bf:
     print()
-    print("***********************************************")
+    print("*****************")
     print("Created BFE session on host {}".format(const.BFE_HOST))
-    print("***********************************************")
+    print("*****************")
     print()
 
 REF_SNAPSHOT = ''
@@ -19,9 +22,9 @@ NEW_SNAPSHOT = ''
 
 bf.set_network(const.NETWORK_NAME)
 print()
-print("***********************************************")
+print("*****************")
 print("Network is set as {}".format(const.NETWORK_NAME))
-print("***********************************************")
+print("*****************")
 print()
 
 
@@ -40,9 +43,9 @@ else:
     NEW_SNAPSHOT = snapshots[0]
 
 print()
-print("***********************************************")
+print("*****************")
 print("Snapshots being compared are {}, {}".format(NEW_SNAPSHOT, REF_SNAPSHOT))
-print("***********************************************")
+print("*****************")
 print()
 
 def get_compare_metadata_results(bf: Session, snapshot_name: str, reference_snapshot_name: str):
@@ -86,17 +89,30 @@ def get_result(resp):
     result["ospf_neighbors"] = resp.rp_ospf_neighbors.num_results
     result["ospf_process"] = resp.rp_ospf_process.num_results
 
-    print(json.dumps(result, indent=4))
-
-response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
-if response.uninitialized:
-    init_snapshot_comparison(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
-    response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
-    while (response.aws_security_groups.status != 2):
-        response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
-    else: 
-        get_result(response)
+    result = json.dumps(result, indent=4)
+    print(result)
+    return result
+print("REF_SNAPSHOT: ", REF_SNAPSHOT)
+print("NEW_SNAPSHOT: ", NEW_SNAPSHOT)
+if NEW_SNAPSHOT == REF_SNAPSHOT:
+    msg = "Nothing to compare as both snapshots are the same."
+    print(msg)
+    client.chat_postMessage(channel='netops_mntc', text=msg)
 else:
-    get_result(response)
+    response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
+    print(response)
+    comparison_result = {}
+    if response.uninitialized:
+        init_snapshot_comparison(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
+        response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
+        print(response)
+        while (response.aws_security_groups.status != 2):
+            response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
+            print(response)
+        else: 
+            comparison_result = get_result(response)
+    else:
+        comparison_result = get_result(response)
 
-
+    print(comparison_result)
+    client.chat_postMessage(channel='netops_mntc', text=comparison_result)

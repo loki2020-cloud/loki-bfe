@@ -16,4 +16,4 @@ def create_policies(bf: Session):
 
 create_policies(bf)
 print(const.INIT_SNAPSHOT_DIR)
-bf.init_snapshot(const.INIT_SNAPSHOT_DIR, name=const.INIT_SNAPSHOT_NAME, overwrite=True)
+bf.init_snapshot(SCRIPT_DIR+'/'+const.INIT_SNAPSHOT_DIR, name=const.INIT_SNAPSHOT_NAME, overwrite=True)
