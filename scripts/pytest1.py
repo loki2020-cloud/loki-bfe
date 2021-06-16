@@ -4,7 +4,7 @@ from intentionet.bfe.proto import api_gateway_pb2 as api
 import const
 import slack
 
-client = slack.WebClient(token='xoxb-1289970300372-2190340723472-e9FWIAhXrQcfAVkXhCU5gz0q')
+client = slack.WebClient(token='xoxb-1289970300372-2190340723472-74e3TpPcCe8qJiq2h7Cr4xyV')
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 os.environ['BFE_SSL_CERT'] = SCRIPT_DIR+'/../cert/test.crt'
