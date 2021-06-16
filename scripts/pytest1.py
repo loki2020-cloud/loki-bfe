@@ -4,7 +4,7 @@ from intentionet.bfe.proto import api_gateway_pb2 as api
 import const
 import slack
 
-client = slack.WebClient(token='xoxb-1289970300372-2190340723472-qBPPwI5CpBplhvfglNOKYF1G')
+client = slack.WebClient(token='xoxb-1289970300372-2190340723472-e9FWIAhXrQcfAVkXhCU5gz0q')
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 os.environ['BFE_SSL_CERT'] = SCRIPT_DIR+'/../cert/test.crt'
@@ -108,7 +108,7 @@ else:
         print(response)
         while (response.aws_security_groups.status != 2):
             response = get_compare_metadata_results(bf, NEW_SNAPSHOT, REF_SNAPSHOT)
-            print(response)
+            #print(response)
         else: 
             comparison_result = get_result(response)
     else:
