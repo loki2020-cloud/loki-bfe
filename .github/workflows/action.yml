@@ -64,6 +64,8 @@ jobs:
         pip install -r $GITHUB_WORKSPACE/main/requirements.txt
           
     - name: execute python script
+      env: 
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       run: |
         python $GITHUB_WORKSPACE/main/scripts/compare_snapshots.py
         python $GITHUB_WORKSPACE/main/scripts/apply_policies.py
