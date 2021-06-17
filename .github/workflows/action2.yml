@@ -25,4 +25,4 @@ jobs:
           
       - name: execute python script
         run: |
-          python $GITHUB_WORKSPACE/main/scripts/pytest2.py
+          python $GITHUB_WORKSPACE/main/scripts/apply_policies.py
