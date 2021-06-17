@@ -11,4 +11,4 @@ def sendToSlack(channel: str, text: str):
     except SlackApiError as e:
         error = e.response["error"]
         print(error)
-        assert error
+        assert error 
